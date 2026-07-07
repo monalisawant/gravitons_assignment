@@ -1,8 +1,6 @@
 //
 //  LoginView.swift
-//  GravitonesAssignment > Screens
-//
-//  Email/password sign-in screen. Delegates all logic to `AuthViewModel`.
+//  GravitonesAssignment
 //
 
 import SwiftUI
@@ -31,26 +29,26 @@ struct LoginView: View {
             .padding(.horizontal, 24)
             .navigationTitle("Sign In")
             .animation(.default, value: auth.state)
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { focusedField = .email }
+            }
         }
     }
 
     // MARK: - Sections
 
     private var header: some View {
-        VStack(spacing: 16) {
-            Image("GravitonesLogo")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: 220)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
-                .background(.white, in: RoundedRectangle(cornerRadius: 16))
-                .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
+        VStack(spacing: 12) {
+            (Text("g").foregroundStyle(brandRed) + Text("ravitones"))
+                .font(.system(size: 44, weight: .bold, design: .rounded))
+                .tracking(0.5)
             Text("Sign in to browse and play videos")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
     }
+
+    private var brandRed: Color { Color(red: 0.80, green: 0.16, blue: 0.24) }
 
     private var form: some View {
         VStack(spacing: 12) {

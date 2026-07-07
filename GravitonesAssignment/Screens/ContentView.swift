@@ -1,8 +1,8 @@
 //
 //  ContentView.swift
-//  GravitonesAssignment > Screens
+//  GravitonesAssignment
 //
-//  Root view. Gates the UI on authentication state.
+//  Root view — shows the list when signed in, the login screen otherwise.
 //
 
 import SwiftUI
@@ -13,7 +13,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if auth.isAuthenticated {
-                HomeView()
+                VideoListView()
             } else {
                 LoginView()
             }

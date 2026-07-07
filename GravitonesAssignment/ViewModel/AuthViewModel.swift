@@ -1,10 +1,9 @@
 //
 //  AuthViewModel.swift
-//  GravitonesAssignment > ViewModel
+//  GravitonesAssignment
 //
-//  Owns authentication state for the app: performs login/logout against the API
-//  and persists tokens + user to the Keychain. Session restoration on launch is
-//  driven purely by what's already in the Keychain.
+//  Login/logout plus the app's auth state. Tokens live in the Keychain, and the
+//  session is restored on launch from whatever is stored there.
 //
 
 import Foundation
@@ -25,11 +24,11 @@ final class AuthViewModel: ObservableObject {
     private var sessionExpiredObserver: NSObjectProtocol?
 
     init() {
-        // Restore an existing session from the Keychain on cold launch.
+        // Restore a session from the Keychain on launch.
         self.isAuthenticated = retrieveFromKeychain(key: .accessToken) != nil
         self.currentUser = Self.restoreUser()
 
-        // A refresh that can't recover (posted by APIClient) forces sign-in again.
+        // APIClient posts this when even the refresh token is gone.
         sessionExpiredObserver = NotificationCenter.default.addObserver(
             forName: .sessionExpired, object: nil, queue: .main
         ) { [weak self] _ in
@@ -83,14 +82,12 @@ final class AuthViewModel: ObservableObject {
     // MARK: - Logout
 
     func logout() async {
-        // Best-effort server-side invalidation; the local session is cleared
-        // regardless of whether the network call succeeds.
+        // Tell the server if we can, but clear locally either way.
         _ = try? await APIClient.shared.send(path: "/api/auth/logout", method: "POST")
         clearSession()
         state = .idle
     }
 
-    /// Called when APIClient can't refresh an expired session.
     private func handleSessionExpired() {
         guard isAuthenticated else { return }
         clearSession()

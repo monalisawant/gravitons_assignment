@@ -1,17 +1,15 @@
 //
 //  Keychain.swift
-//  GravitonesAssignment > GlobalFunctions
+//  GravitonesAssignment
 //
-//  Secure token storage backed directly by the Security framework
-//  (kSecClassGenericPassword). Mirrors the reference project's approach of
-//  exposing store/retrieve/delete as global helpers, with a typed key enum
-//  layered on top so call sites can't fat-finger a raw string.
+//  Token storage on top of the Security framework (kSecClassGenericPassword),
+//  exposed as small global helpers with a typed key enum so we don't pass raw
+//  strings around.
 //
 
 import Foundation
 import Security
 
-/// Everything we persist for the current session.
 enum KeychainKey: String, CaseIterable {
     case accessToken
     case refreshToken
@@ -21,11 +19,10 @@ enum KeychainKey: String, CaseIterable {
     case userRole
 }
 
-/// Keys wiped on logout / session invalidation.
+// Keys cleared on logout.
 let sessionKeychainKeys: [KeychainKey] = KeychainKey.allCases
 
-/// Namespaces keys per build configuration so a debug session and a release
-/// session can't clobber each other's tokens in the Keychain.
+// Prefix keys in debug builds so a dev session doesn't clobber a release one.
 private func prefixedKey(_ key: String) -> String {
     #if DEBUG
     return "dev_\(key)"
@@ -101,7 +98,6 @@ func deleteFromKeychain(key: KeychainKey) -> Bool {
     deleteFromKeychain(key: key.rawValue)
 }
 
-/// Wipes every session value from the Keychain (logout / invalidated session).
 func clearSessionKeychainValues() {
     sessionKeychainKeys.forEach { deleteFromKeychain(key: $0) }
 }
