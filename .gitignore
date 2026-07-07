@@ -20,5 +20,3 @@ build/
 # Copy Configuration/Secrets.swift.example -> Configuration/Secrets.swift
 GravitonesAssignment/Configuration/Secrets.swift
 
-# Reference project only — never committed/pushed
-travelxp-ios-mobile copy/
