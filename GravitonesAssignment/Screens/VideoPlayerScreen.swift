@@ -13,6 +13,10 @@ struct VideoPlayerScreen: View {
         content
             .navigationTitle(video.title)
             .navigationBarTitleDisplayMode(.inline)
+            // The player screen is black, so make the nav bar title/back button
+            // white instead of dark-on-black (which was invisible).
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
     }
 
     @ViewBuilder
