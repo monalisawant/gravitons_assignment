@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  The HLS Interview Platform API is served over plain HTTP by IP address,
+	  which App Transport Security blocks by default. ATS exception domains do
+	  not support raw IP literals, so we allow arbitrary loads for the dev
+	  backend. The CDN video URLs are HTTPS and unaffected.
+	-->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

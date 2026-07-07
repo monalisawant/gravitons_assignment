@@ -1,22 +1,27 @@
 //
 //  ContentView.swift
-//  Gravitons
+//  GravitonesAssignment > Screens
+//
+//  Root view. Gates the UI on authentication state.
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var auth: AuthViewModel
+
     var body: some View {
-        VStack {
-            Image(systemName: "play.rectangle.on.rectangle")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Gravitons")
+        Group {
+            if auth.isAuthenticated {
+                HomeView()
+            } else {
+                LoginView()
+            }
         }
-        .padding()
+        .animation(.default, value: auth.isAuthenticated)
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView().environmentObject(AuthViewModel())
 }
