@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# Secrets — real config never gets committed.
+# Copy Configuration/Secrets.swift.example -> Configuration/Secrets.swift
+GravitonesAssignment/Configuration/Secrets.swift
+
+# Reference project only — never committed/pushed
+travelxp-ios-mobile copy/
