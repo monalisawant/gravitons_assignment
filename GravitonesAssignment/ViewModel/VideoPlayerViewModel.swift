@@ -24,6 +24,15 @@ final class VideoPlayerViewModel: ObservableObject {
     // loads. nil until then. Portrait videos are < 1.
     @Published private(set) var aspectRatio: CGFloat?
 
+    // Goes true once the item is ready and we know its size, so the player view
+    // can start playback (and auto-fullscreen portrait videos) at the right time.
+    @Published private(set) var readyToBeginPlayback = false
+
+    // Bumped on each load so the player view knows a fresh item started.
+    private(set) var playbackToken = 0
+
+    var isPortrait: Bool { (aspectRatio ?? 2) < 1 }
+
     let player = AVPlayer()
 
     private var currentURL: URL?
@@ -47,11 +56,14 @@ final class VideoPlayerViewModel: ObservableObject {
     private func start(url: URL) {
         configureAudioSession()
         aspectRatio = nil
+        readyToBeginPlayback = false
+        playbackToken += 1
         let item = AVPlayerItem(url: url)
         observe(item: item)
         player.replaceCurrentItem(with: item)
         state = .buffering
-        player.play()
+        // Playback is started by the player view once the item is ready, so we
+        // know the video's size and can auto-fullscreen portrait clips.
     }
 
     func play() { player.play() }
@@ -62,7 +74,7 @@ final class VideoPlayerViewModel: ObservableObject {
     private func observe(item: AVPlayerItem) {
         invalidateObservers()
 
-        statusObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
+        statusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
             Task { @MainActor in self?.handleStatusChange(of: item) }
         }
 
@@ -96,7 +108,15 @@ final class VideoPlayerViewModel: ObservableObject {
     }
 
     private func handleStatusChange(of item: AVPlayerItem) {
-        if item.status == .failed { fail(with: item.error) }
+        switch item.status {
+        case .failed:
+            fail(with: item.error)
+        case .readyToPlay:
+            updateAspectRatio(from: item.presentationSize)
+            readyToBeginPlayback = true
+        default:
+            break
+        }
     }
 
     private func handleTimeControlChange(of player: AVPlayer) {
@@ -145,12 +165,10 @@ final class VideoPlayerViewModel: ObservableObject {
 
     // MARK: - Teardown
 
-    func tearDown() {
-        player.pause()
-        invalidateObservers()
-        player.replaceCurrentItem(with: nil)
-        currentURL = nil
-    }
+    // NOTE: teardown happens in deinit (when the screen is popped), NOT on
+    // onDisappear — AVKit's full-screen transition fires onDisappear on the
+    // inline view, and tearing the player down there is what caused the
+    // full-screen black screen.
 
     private func invalidateObservers() {
         statusObservation?.invalidate(); statusObservation = nil
@@ -171,5 +189,6 @@ final class VideoPlayerViewModel: ObservableObject {
         timeControlObservation?.invalidate()
         presentationSizeObservation?.invalidate()
         notificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
+        player.replaceCurrentItem(with: nil)
     }
 }
