@@ -13,7 +13,6 @@ struct VideoPlayerScreen: View {
         content
             .navigationTitle(video.title)
             .navigationBarTitleDisplayMode(.inline)
-            .background(backgroundGradient.ignoresSafeArea())
     }
 
     @ViewBuilder
@@ -43,35 +42,29 @@ struct VideoPlayerScreen: View {
         }
     }
 
-    // MARK: - Playable
-
     private func playable(url: URL) -> some View {
-        GeometryReader { geo in
-            VStack(spacing: 0) {
-                // Keep the player out of the ScrollView and unclipped, otherwise
-                // AVKit's full-screen transition renders black.
-                playerBox(in: geo.size)
-                ScrollView {
-                    metadataCard.padding(16)
-                }
-            }
+        let ratio = viewModel.aspectRatio ?? (16.0 / 9.0)
+        return ZStack {
+            Color.black.ignoresSafeArea()
+            video(ratio: ratio)
         }
+        // Cleanup happens in the view model's deinit (screen popped), not here —
+        // AVKit fires onDisappear during the full-screen transition.
         .onAppear { viewModel.load(url: url) }
-        .onDisappear { viewModel.tearDown() }
     }
 
-    // Sizes to the real video ratio, capping portrait height. AVKit letterboxes
-    // inside the black box, so 16:9 is a fine fallback until the size is known.
-    private func playerBox(in available: CGSize) -> some View {
-        let ratio = viewModel.aspectRatio ?? (16.0 / 9.0)
-        let height = min(available.width / ratio, available.height * 0.6)
-
-        return ZStack {
-            Color.black
-            VideoPlayerView(player: viewModel.player)
+    // Portrait fills the screen; 16:9 sits centered in the middle.
+    @ViewBuilder
+    private func video(ratio: CGFloat) -> some View {
+        let stack = ZStack {
+            VideoPlayerView(viewModel: viewModel)
             playbackOverlay
         }
-        .frame(width: available.width, height: height)
+        if ratio < 1 {
+            stack.ignoresSafeArea()
+        } else {
+            stack.aspectRatio(ratio, contentMode: .fit)
+        }
     }
 
     @ViewBuilder
@@ -85,10 +78,9 @@ struct VideoPlayerScreen: View {
                     Text("Buffering…").font(.caption).foregroundStyle(.white.opacity(0.9))
                 }
             }
-            .transition(.opacity)
         case .failed(let message):
             ZStack {
-                Color.black.opacity(0.55)
+                Color.black.opacity(0.6)
                 VStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.largeTitle).foregroundStyle(.yellow)
@@ -107,57 +99,9 @@ struct VideoPlayerScreen: View {
                 }
                 .padding()
             }
-            .transition(.opacity)
         default:
             EmptyView()
         }
-    }
-
-    // MARK: - Metadata
-
-    private var metadataCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(video.title)
-                .font(.title2.weight(.bold))
-
-            if let duration = video.formattedDuration {
-                InfoChip(icon: "clock", text: duration)
-            }
-
-            if !video.description.isEmpty {
-                Text(video.description)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(.white.opacity(0.08), lineWidth: 1)
-        )
-    }
-
-    private var backgroundGradient: LinearGradient {
-        LinearGradient(
-            colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
-            startPoint: .top, endPoint: .bottom
-        )
-    }
-}
-
-// MARK: - Small components
-
-struct InfoChip: View {
-    let icon: String
-    let text: String
-    var body: some View {
-        Label(text, systemImage: icon)
-            .font(.caption.weight(.medium))
-            .padding(.horizontal, 10).padding(.vertical, 5)
-            .background(Color(.tertiarySystemBackground), in: Capsule())
-            .foregroundStyle(.secondary)
     }
 }
 
