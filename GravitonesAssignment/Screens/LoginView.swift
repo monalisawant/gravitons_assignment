@@ -37,12 +37,15 @@ struct LoginView: View {
     // MARK: - Sections
 
     private var header: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "play.rectangle.on.rectangle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.tint)
-            Text("HLS Video Streaming")
-                .font(.title2.weight(.semibold))
+        VStack(spacing: 16) {
+            Image("GravitonesLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 220)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .background(.white, in: RoundedRectangle(cornerRadius: 16))
+                .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
             Text("Sign in to browse and play videos")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
