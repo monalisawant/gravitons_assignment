@@ -1,17 +1,16 @@
 //
 //  APIClient.swift
-//  GravitonesAssignment > GlobalFunctions
+//  GravitonesAssignment
 //
-//  Single entry point for HTTP requests. Transparently refreshes the access
-//  token on a 401 and retries the original request once. Refreshes are
-//  single-flighted via an actor, so a burst of concurrent 401s triggers only
-//  one call to /api/auth/refresh (and only one rotation of the refresh token).
+//  One place every request goes through. On a 401 it refreshes the access token
+//  and retries once. Refreshes are single-flighted so a burst of 401s only hits
+//  /api/auth/refresh once (and rotates the refresh token once).
 //
 
 import Foundation
 
 extension Notification.Name {
-    /// Posted when the session can no longer be refreshed and the user must sign in again.
+    // Posted when the refresh token is also dead and the user must sign in again.
     static let sessionExpired = Notification.Name("com.gravitons.sessionExpired")
 }
 
@@ -26,10 +25,6 @@ final class APIClient {
         self.refresher = TokenRefresher(session: session)
     }
 
-    /// Sends a request and returns its data + HTTP response. For authorized
-    /// requests, a 401 triggers a token refresh and a single retry; if that
-    /// still fails, `.sessionExpired` is posted and `APIError.unauthorized`
-    /// is thrown.
     @discardableResult
     func send(
         path: String,
@@ -66,7 +61,7 @@ final class APIClient {
     }
 }
 
-/// Coordinates access-token refresh so at most one refresh runs at a time.
+// Makes sure only one refresh runs at a time.
 private actor TokenRefresher {
     private let session: URLSession
     private var inFlight: Task<Bool, Never>?
@@ -75,8 +70,7 @@ private actor TokenRefresher {
         self.session = session
     }
 
-    /// Returns `true` if the access token was refreshed and re-stored. Callers
-    /// that arrive while a refresh is already running await the same result.
+    // Callers that arrive mid-refresh wait on the same task.
     func refresh() async -> Bool {
         if let inFlight { return await inFlight.value }
 

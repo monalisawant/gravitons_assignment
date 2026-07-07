@@ -1,19 +1,13 @@
 //
 //  Networking.swift
-//  GravitonesAssignment > GlobalFunctions
-//
-//  Thin networking layer mirroring the reference project: a `serviceUrl` global,
-//  a `HeaderManager` singleton that injects the Bearer token from the Keychain,
-//  and a `NetworkHelper` that assembles requests.
+//  GravitonesAssignment
 //
 
 import Foundation
 
-/// Backend base URL. Sourced from the gitignored `Secrets.swift` so it never
-/// lands in source control.
+// Base URL comes from the gitignored Secrets.swift so it stays out of git.
 let serviceUrl = Secrets.apiBaseURL
 
-/// Errors surfaced by the networking layer, with user-presentable descriptions.
 enum APIError: LocalizedError {
     case invalidURL
     case invalidResponse
@@ -40,8 +34,8 @@ enum APIError: LocalizedError {
     }
 }
 
-/// Central place that assembles HTTP headers and attaches the auth token,
-/// read fresh from the Keychain on every request.
+// Builds the standard headers and attaches the Bearer token, read fresh from
+// the Keychain each time.
 final class HeaderManager {
     static let shared = HeaderManager()
     private init() {}
@@ -58,7 +52,6 @@ final class HeaderManager {
     }
 }
 
-/// Builds `URLRequest`s against `serviceUrl` with the standard headers.
 enum NetworkHelper {
     static func createRequest(
         path: String,
