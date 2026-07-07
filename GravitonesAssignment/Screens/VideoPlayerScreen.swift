@@ -50,7 +50,7 @@ struct VideoPlayerScreen: View {
         }
         // Cleanup happens in the view model's deinit (screen popped), not here —
         // AVKit fires onDisappear during the full-screen transition.
-        .onAppear { viewModel.load(url: url) }
+        .onAppear { viewModel.load(url: url, title: video.title) }
     }
 
     // Portrait fills the screen; 16:9 sits centered in the middle.

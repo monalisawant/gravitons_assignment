@@ -36,15 +36,17 @@ final class VideoPlayerViewModel: ObservableObject {
     let player = AVPlayer()
 
     private var currentURL: URL?
+    private var currentTitle = ""
     private var statusObservation: NSKeyValueObservation?
     private var timeControlObservation: NSKeyValueObservation?
     private var presentationSizeObservation: NSKeyValueObservation?
     private var notificationTokens: [NSObjectProtocol] = []
 
     // Safe to call repeatedly (e.g. on redraw) — only reloads if the URL changed.
-    func load(url: URL) {
+    func load(url: URL, title: String) {
         guard currentURL != url else { return }
         currentURL = url
+        currentTitle = title
         start(url: url)
     }
 
@@ -59,6 +61,7 @@ final class VideoPlayerViewModel: ObservableObject {
         readyToBeginPlayback = false
         playbackToken += 1
         let item = AVPlayerItem(url: url)
+        item.externalMetadata = Self.titleMetadata(currentTitle)   // shown at top of the AVKit player
         observe(item: item)
         player.replaceCurrentItem(with: item)
         state = .buffering
@@ -176,6 +179,15 @@ final class VideoPlayerViewModel: ObservableObject {
         presentationSizeObservation?.invalidate(); presentationSizeObservation = nil
         notificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
         notificationTokens.removeAll()
+    }
+
+    private static func titleMetadata(_ title: String) -> [AVMetadataItem] {
+        guard !title.isEmpty else { return [] }
+        let item = AVMutableMetadataItem()
+        item.identifier = .commonIdentifierTitle
+        item.value = title as NSString
+        item.extendedLanguageTag = "und"
+        return [item]
     }
 
     private func configureAudioSession() {
