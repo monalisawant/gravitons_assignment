@@ -50,14 +50,10 @@ struct VideoThumbnail: View {
 
     var body: some View {
         ZStack {
-            if let image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-            } else {
+          
                 LinearGradient(colors: placeholderColors,
-                               startPoint: .topLeading, endPoint: .bottomTrailing)
-            }
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            
 
             Image(systemName: video.status == .ready ? "play.circle.fill" : "film")
                 .font(.title3)
@@ -78,7 +74,7 @@ struct VideoThumbnail: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .task(id: video.id) {
             guard video.status == .ready, image == nil else { return }
-            image = await ThumbnailLoader.shared.thumbnail(for: video)
+            // image = await ThumbnailLoader.shared.thumbnail(for: video)
         }
     }
 
