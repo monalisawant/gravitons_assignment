@@ -32,10 +32,6 @@ project will build:
 
 3. Open `GravitonesAssignment.xcodeproj`, pick an iOS 18 simulator, and run.
 
-To run on a real device, select your team under Signing & Capabilities first.
-
-> The API is served over plain HTTP, so there's an App Transport Security
-> exception in `Info.plist`. The CDN video URLs are HTTPS and aren't affected.
 
 ## What's implemented
 
@@ -67,21 +63,3 @@ Fairly standard MVVM:
 refresh-on-401 lives, so the video calls get it for free. Concurrent 401s only
 trigger one refresh (single-flighted through an actor).
 
-## Assumptions
-
-- Only the base URL is treated as a secret; credentials are entered at runtime,
-  never stored in code.
-- The API doesn't return a thumbnail/poster for a video, so list thumbnails are
-  generated from the stream itself with `AVAssetImageGenerator` (cached).
-- At the time of building, the account had 5 videos, all READY. PROCESSING and
-  FAILED are handled defensively per the spec but couldn't be exercised against
-  live data.
-
-## What I'd improve with more time
-
-- Refresh the access token proactively (shortly before it expires) instead of
-  only reacting to a 401.
-- Cache generated thumbnails on disk and cancel generation for rows scrolled off.
-- Poll a PROCESSING video until it becomes READY.
-- Add unit tests for the view models and networking with a mocked `APIClient`.
-- Pull the hardcoded strings into a localizable catalog.

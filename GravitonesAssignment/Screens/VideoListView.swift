@@ -18,7 +18,7 @@ struct VideoListView: View {
                         Menu {
                             if let user = auth.currentUser {
                                 Text(user.name)
-                                Text(user.email)
+                                // Text(user.email)
                             }
                             Button("Log Out", role: .destructive) {
                                 Task { await auth.logout() }
